@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لعبة الألغاز الذكية</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #E3F2FD;
+            color: #0D47A1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1976D2;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .level {
+            display: none;
+        }
+
+        .level.active {
+            display: block;
+        }
+
+        .question {
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #E8F5E9;
+            border-radius: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            margin: 15px 0;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        #timer {
+            color: #F44336;
+            font-size: 1.3em;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .result {
+            font-size: 1.8em;
+            text-align: center;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        .win {
+            background: #C8E6C9;
+            color: #4CAF50;
+        }
+
+        .lose {
+            background: #FFCDD2;
+            color: #F44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧩 لعبة الألغاز الذكية 🧩</h1>
+        
+        <!-- المستوى 1 -->
+        <div class="level active" id="level1">
+            <div class="question">
+                <h2>المستوى الأول: محمد حالات</h2>
+                <p>ما هو الشيء الذي يمشي بلا رجلين ويبكي بلا عينين؟</p>
+            </div>
+            <input type="text" placeholder="أدخل الإجابة هنا">
+            <button onclick="checkAnswer(1)">تحقق من الإجابة</button>
+        </div>
+
+        <!-- المستوى 2 -->
+        <div class="level" id="level2">
+            <div class="question">
+                <h2>المستوى الثاني: عومر جمول</h2>
+                <p>أخو خالتك وابن عمتك وليس بأختك، فمن يكون؟</p>
+            </div>
+            <input type="text" placeholder="أدخل الإجابة هنا">
+            <button onclick="checkAnswer(2)">تحقق من الإجابة</button>
+        </div>
+
+        <!-- المستوى 3 -->
+        <div class="level" id="level3">
+            <div class="question">
+                <h2>المستوى الثالث: لقب عمرو المجتمع</h2>
+                <p>أرقام متتالية مجموعها 15، أدخلها بهذا الشكل: 1+2+3</p>
+                <div id="timer">الوقت المتبقي: 15 ثانية</div>
+            </div>
+            <input type="text" placeholder="مثال: 1+2+3+4+5">
+            <button onclick="checkAnswer(3)">تحقق من الإجابة</button>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="resultScreen"></div>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let timeLeft = 15;
+        let timerId;
+
+        function startTimer() {
+            timeLeft = 15;
+            const timerElement = document.getElementById('timer');
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+                
+                if(timeLeft <= 0) {
+                    clearInterval(timerId);
+                    showResult('⏳ انتهى الوقت! فشلت في المستوى', 'lose');
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(level) {
+            const input = document.querySelector('.active input');
+            const answer = input.value.trim().toLowerCase();
+            let isCorrect = false;
+
+            switch(level) {
+                case 1:
+                    isCorrect = ['السحاب', 'الغمام'].includes(answer);
+                    break;
+                    
+                case 2:
+                    isCorrect = ['ابني', 'ابنك'].includes(answer);
+                    break;
+                    
+                case 3:
+                    try {
+                        const numbers = answer.split('+').map(Number);
+                        const sum = numbers.reduce((a, b) => a + b);
+                        const isConsecutive = numbers.every((num, i) => 
+                            i === 0 || num === numbers[i-1] + 1
+                        );
+                        isCorrect = (sum === 15) && isConsecutive;
+                    } catch {
+                        isCorrect = false;
+                    }
+                    break;
+            }
+
+            if(isCorrect) {
+                if(level === 3) {
+                    showResult('🎊 فوز كبير! أنت تستحق لقب عمرو المجتمع 🎊', 'win');
+                    clearInterval(timerId);
+                } else {
+                    currentLevel++;
+                    document.querySelectorAll('.level').forEach(el => el.classList.remove('active'));
+                    document.getElementById(`level${currentLevel}`).classList.add('active');
+                    if(currentLevel === 3) startTimer();
+                }
+            } else {
+                showResult('❌ إجابة خاطئة! حاول مرة أخرى', 'lose');
+            }
+        }
+
+        function showResult(message, type) {
+            const resultScreen = document.getElementById('resultScreen');
+            resultScreen.innerHTML = `
+                <div class="result ${type}">
+                    ${message}
+                    ${type === 'lose' ? '<button onclick="location.reload()">إعادة المحاولة</button>' : ''}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
